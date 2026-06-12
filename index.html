@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>アサガオ領収書 — 無料・登録不要の領収書作成ツール</title>
+<meta name="description" content="登録不要・完全無料の領収書ジェネレーター。インボイス制度(適格簡易請求書)対応、税込金額からの内訳自動計算、収入印紙欄の自動判定、朱印スタンプ付き。データはどこにも送信されない完全ローカル動作で、ブラウザだけで領収書PDFが作れます。">
+<link rel="canonical" href="https://taku0826.github.io/asagao-receipt/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="アサガオ領収書 — 無料・登録不要の領収書作成ツール">
+<meta property="og:description" content="登録不要・完全無料。インボイス対応、収入印紙欄の自動判定、データはどこにも送信されない完全ローカル動作の領収書ジェネレーター。">
+<meta property="og:url" content="https://taku0826.github.io/asagao-receipt/">
+<meta property="og:site_name" content="アサガオ領収書">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="アサガオ領収書 — 無料・登録不要の領収書作成ツール">
+<meta name="twitter:description" content="登録不要・完全無料。インボイス対応、収入印紙欄の自動判定、データはどこにも送信されない完全ローカル動作の領収書ジェネレーター。">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "アサガオ領収書",
+  "url": "https://taku0826.github.io/asagao-receipt/",
+  "description": "登録不要・完全無料の領収書ジェネレーター。データはどこにも送信されない完全ローカル動作。",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Any",
+  "inLanguage": "ja",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "JPY" }
+}
+</script>
+<style>
+  :root{
+    --ai: #1B2A4A;        /* 藍(シリーズ共通ベース) */
+    --ai-deep: #11203B;
+    --asagao: #3A5BA0;    /* 縹(あさがおのアクセント) */
+    --shu: #C73E2D;       /* 朱(印鑑) */
+    --washi: #F7F8F6;
+    --kami: #FFFFFF;
+    --sumi: #23272E;
+    --usuzumi: #6B7280;
+    --keisen: #D7DCE3;
+    --radius: 10px;
+  }
+  *{ box-sizing: border-box; margin: 0; padding: 0; }
+  html,body{ height:100%; }
+  body{
+    font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "Noto Sans JP", "Meiryo", sans-serif;
+    background: var(--washi);
+    color: var(--sumi);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ===== ヘッダー ===== */
+  header.app{
+    background: var(--ai);
+    color: #fff;
+    padding: 14px 24px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    flex-wrap: wrap;
+  }
+  .brand{ display:flex; align-items:baseline; gap:10px; }
+  .brand h1{ font-size: 18px; font-weight: 700; letter-spacing: .08em; }
+  .brand span{ font-size: 11px; opacity:.75; letter-spacing:.05em; }
+  .header-actions{ display:flex; gap:10px; }
+  button{
+    font-family: inherit; font-size: 13px; cursor:pointer;
+    border:none; border-radius: 6px; padding: 9px 16px;
+    transition: filter .15s ease;
+  }
+  button:hover{ filter: brightness(1.08); }
+  button:focus-visible{ outline: 2px solid #fff; outline-offset: 2px; }
+  .btn-print{ background: var(--asagao); color:#fff; font-weight:700; letter-spacing:.04em; }
+  .btn-ghost{ background: rgba(255,255,255,.12); color:#fff; }
+
+  /* ===== レイアウト ===== */
+  .wrap{
+    display:grid; grid-template-columns: 380px 1fr;
+    gap: 24px; padding: 24px; max-width: 1280px; margin: 0 auto;
+  }
+  @media (max-width: 920px){ .wrap{ grid-template-columns: 1fr; } }
+
+  /* ===== 入力フォーム ===== */
+  .panel{
+    background: var(--kami);
+    border: 1px solid var(--keisen);
+    border-radius: var(--radius);
+    padding: 18px;
+  }
+  .panel + .panel{ margin-top: 16px; }
+  .panel h2{
+    font-size: 12px; color: var(--ai); letter-spacing: .15em;
+    border-left: 3px solid var(--asagao); padding-left: 8px; margin-bottom: 12px;
+  }
+  .field{ margin-bottom: 10px; }
+  .field label{ display:block; font-size: 11px; color: var(--usuzumi); margin-bottom: 3px; }
+  .field input, .field textarea, .field select{
+    width:100%; font-family:inherit; font-size: 13px;
+    border:1px solid var(--keisen); border-radius:6px; padding: 7px 9px;
+    background:#FDFDFC; color: var(--sumi);
+  }
+  .field input:focus, .field textarea:focus, .field select:focus{
+    outline: 2px solid var(--ai); outline-offset: 0; border-color: var(--ai);
+  }
+  .row2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .hint{ font-size:11px; color:var(--usuzumi); margin-top:4px; }
+  .stamp-toggle{ display:flex; align-items:center; gap:8px; font-size:13px; margin-bottom: 6px; }
+  .stamp-toggle input{ width:16px; height:16px; accent-color: var(--shu); }
+
+  /* ===== プレビュー(領収書本体)===== */
+  .preview-area{ position: relative; }
+  .sheet{
+    background: #fff;
+    width: 100%; max-width: 800px; margin: 0 auto;
+    padding: 48px 52px;
+    border: 1px solid var(--keisen);
+    border-radius: 4px;
+    box-shadow: 0 2px 14px rgba(27,42,74,.08);
+    position: relative;
+  }
+  .sheet .title{
+    text-align:center; font-size: 26px; letter-spacing: 1.2em;
+    text-indent: 1.2em; /* 字間を均等に見せる */
+    color: var(--sumi); font-weight: 600;
+    border-bottom: 2px solid var(--sumi);
+    padding-bottom: 10px; margin-bottom: 28px;
+  }
+  .meta-line{
+    display:flex; justify-content:flex-end; gap: 24px;
+    font-size: 12px; margin-bottom: 20px;
+  }
+  .meta-line span.lbl{ color: var(--usuzumi); margin-right: 6px; }
+  .to-name{
+    font-size: 18px; font-weight: 600;
+    border-bottom: 1px solid var(--sumi);
+    padding-bottom: 4px; margin-bottom: 30px;
+    max-width: 420px; min-height: 1.4em;
+  }
+
+  .amount-box{
+    text-align: center;
+    margin: 0 auto 8px;
+    max-width: 480px;
+    background: var(--washi);
+    border-top: 2px solid var(--sumi);
+    border-bottom: 2px solid var(--sumi);
+    padding: 14px 20px 12px;
+  }
+  .amount-box .val{
+    font-size: 34px; font-weight: 700; letter-spacing: .04em;
+  }
+  .amount-box .tax-note{ font-size: 11px; color: var(--usuzumi); margin-left: 10px; }
+  .tadashi{
+    text-align: center; font-size: 13px; margin-bottom: 6px;
+  }
+  .certify{
+    text-align: center; font-size: 13px; margin-bottom: 28px;
+  }
+
+  .breakdown{
+    width: 260px; font-size: 12px;
+    margin-bottom: 24px;
+  }
+  .breakdown div{
+    display:flex; justify-content: space-between;
+    padding: 4px 8px; border-bottom: 1px solid var(--keisen);
+  }
+  .breakdown div:first-child{ border-top: 1px solid var(--keisen); }
+  .breakdown span:first-child{ color: var(--usuzumi); }
+
+  .bottom-area{
+    display:flex; justify-content: space-between; align-items: flex-end;
+    margin-top: 10px;
+  }
+  .inshi{
+    width: 110px; height: 130px;
+    border: 1px dashed var(--usuzumi);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-size: 11px; color: var(--usuzumi);
+    text-align: center; line-height: 1.8;
+    flex: none;
+  }
+  .inshi.hidden{ display:none; }
+  .from-block{ text-align: left; font-size: 12px; position: relative; max-width: 320px; }
+  .from-name{ font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+  .from-detail{ white-space: pre-line; }
+  .reg-no{ margin-top: 4px; font-size: 12px; }
+
+  /* 朱印スタンプ:このツールの署名要素 */
+  .hanko{
+    position: absolute; right: -74px; bottom: -6px;
+    width: 64px; height: 64px;
+    border: 2.5px solid var(--shu);
+    border-radius: 50%;
+    color: var(--shu);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 700;
+    writing-mode: vertical-rl;
+    letter-spacing: .1em;
+    transform: rotate(4deg);
+    opacity: .88;
+    mix-blend-mode: multiply;
+    background:
+      radial-gradient(circle at 30% 30%, rgba(199,62,45,.06), transparent 60%);
+    overflow: hidden;
+    padding: 4px;
+    text-align: center;
+    line-height: 1.1;
+  }
+  .hanko.hidden{ display:none; }
+
+  footer.credit{
+    text-align:center; font-size: 11px; color: var(--usuzumi);
+    padding: 18px 0 30px;
+  }
+  footer.credit a{ color: var(--ai); }
+
+  /* ===== 印刷 ===== */
+  @media print{
+    body{ background:#fff; }
+    header.app, .form-col, footer.credit{ display:none !important; }
+    .wrap{ display:block; padding:0; max-width:none; }
+    .sheet{
+      box-shadow:none; border:none; border-radius:0;
+      max-width:none; width:100%; padding: 10mm 12mm;
+    }
+  }
+  @page{ size: A4; margin: 8mm; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="app">
+  <div class="brand">
+    <h1>アサガオ領収書</h1>
+    <span>インボイス対応・登録不要・無料</span>
+  </div>
+  <div class="header-actions">
+    <button class="btn-ghost" id="btnSample">サンプルを入れる</button>
+    <button class="btn-print" id="btnPrint">印刷 / PDF保存</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- ===== 入力列 ===== -->
+  <div class="form-col">
+
+    <div class="panel">
+      <h2>基本情報</h2>
+      <div class="row2">
+        <div class="field">
+          <label for="docNo">領収書番号</label>
+          <input id="docNo" data-bind placeholder="RCP-2026-001">
+        </div>
+        <div class="field">
+          <label for="docDate">発行日</label>
+          <input id="docDate" data-bind type="date">
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>宛名</h2>
+      <div class="field">
+        <label for="toName">宛名(会社名・氏名)</label>
+        <input id="toName" data-bind placeholder="株式会社サンプル商事">
+      </div>
+      <div class="field">
+        <label for="toSuffix">敬称</label>
+        <select id="toSuffix" data-bind>
+          <option value="様">様</option>
+          <option value="御中">御中</option>
+          <option value="">(なし)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>金額</h2>
+      <div class="row2">
+        <div class="field">
+          <label for="amount">領収金額(税込)</label>
+          <input id="amount" data-bind type="number" min="0" step="1" placeholder="33000">
+        </div>
+        <div class="field">
+          <label for="taxRate">消費税率</label>
+          <select id="taxRate" data-bind>
+            <option value="10">10%</option>
+            <option value="8">8%(軽減税率)</option>
+            <option value="0">非課税・対象外</option>
+          </select>
+        </div>
+      </div>
+      <p class="hint">税込金額から税抜金額・消費税額の内訳を自動計算して記載します。</p>
+      <div class="field">
+        <label for="tadashi">但し書き</label>
+        <input id="tadashi" data-bind placeholder="お品代として">
+        <p class="hint">「お品代」だけでなく具体的に書くのがおすすめ(例:Webサイト制作費として)。</p>
+      </div>
+      <div class="field">
+        <label for="payMethod">受け取り方法</label>
+        <select id="payMethod" data-bind>
+          <option value="cash">現金</option>
+          <option value="bank">銀行振込</option>
+          <option value="card">クレジットカード</option>
+          <option value="other">その他</option>
+        </select>
+      </div>
+      <div class="stamp-toggle">
+        <input type="checkbox" id="inshiOn">
+        <label for="inshiOn">収入印紙欄を表示する</label>
+      </div>
+      <p class="hint" id="inshiHint">現金で5万円以上を受け取る場合、収入印紙が必要です(チェックを自動でオンにします)。PDF等の電子交付や銀行振込の場合は不要です。</p>
+    </div>
+
+    <div class="panel">
+      <h2>発行者(あなた)</h2>
+      <div class="field">
+        <label for="fromName">名前・屋号</label>
+        <input id="fromName" data-bind placeholder="山田 太郎">
+      </div>
+      <div class="field">
+        <label for="fromDetail">住所・連絡先</label>
+        <textarea id="fromDetail" data-bind rows="3" placeholder="〒530-0001 大阪市北区...
+TEL: 090-0000-0000
+mail@example.com"></textarea>
+      </div>
+      <div class="field">
+        <label for="regNo">適格請求書発行事業者 登録番号(任意)</label>
+        <input id="regNo" data-bind placeholder="T1234567890123">
+        <p class="hint">T + 数字13桁。記載すると適格簡易請求書として使えます。空欄なら記載されません。</p>
+      </div>
+      <div class="stamp-toggle">
+        <input type="checkbox" id="stampOn" checked>
+        <label for="stampOn">朱印スタンプを押す(姓を自動表示)</label>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== プレビュー列 ===== -->
+  <div class="preview-area">
+    <div class="sheet" id="sheet">
+      <div class="title">領収書</div>
+
+      <div class="meta-line">
+        <span><span class="lbl">領収書番号</span><span id="pDocNo">—</span></span>
+        <span><span class="lbl">発行日</span><span id="pDocDate">—</span></span>
+      </div>
+
+      <div class="to-name" id="pToName">&nbsp;</div>
+
+      <div class="amount-box">
+        <span class="val" id="pAmount">¥0-</span>
+        <span class="tax-note" id="pTaxNote">(税込)</span>
+      </div>
+      <p class="tadashi" id="pTadashi">但し お品代として</p>
+      <p class="certify">上記、正に領収いたしました。</p>
+
+      <div class="breakdown" id="pBreakdown"></div>
+
+      <div class="bottom-area">
+        <div class="inshi hidden" id="pInshi">
+          収入印紙<br>貼付欄
+        </div>
+        <div class="from-block">
+          <div class="from-name" id="pFromName"></div>
+          <div class="from-detail" id="pFromDetail"></div>
+          <div class="reg-no" id="pRegNo"></div>
+          <div class="hanko" id="pHanko"></div>
+        </div>
+      </div>
+    </div>
+    <footer class="credit">
+      アサガオ領収書 — ブラウザだけで動きます。入力内容はどこにも送信されません。<br>
+      姉妹ツール:<a href="https://taku0826.github.io/tsubaki-estimate/">ツバキ見積書(見積書・納品書)</a> / <a href="https://taku0826.github.io/sumire-invoice/">スミレ請求書(インボイス対応)</a>
+    </footer>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  function yen(n){
+    return "¥" + Math.round(n).toLocaleString("ja-JP");
+  }
+  function fmtDate(v){
+    if(!v) return "—";
+    var p = v.split("-");
+    return p[0] + "年" + Number(p[1]) + "月" + Number(p[2]) + "日";
+  }
+
+  var inshiTouched = false; // 手動で印紙チェックを触ったら自動判定を止める
+
+  /* ---- 集計と描画 ---- */
+  function render(){
+    var g = function(id){ return document.getElementById(id).value; };
+
+    document.getElementById("pDocNo").textContent  = g("docNo") || "—";
+    document.getElementById("pDocDate").textContent = fmtDate(g("docDate"));
+
+    var toName = g("toName");
+    var suffix = g("toSuffix");
+    document.getElementById("pToName").textContent =
+      toName ? (toName + (suffix ? " " + suffix : "")) : " ";
+
+    /* 金額と内訳(税込から逆算) */
+    var amount = Math.max(0, Math.round(parseFloat(g("amount")) || 0));
+    var rate = parseInt(g("taxRate"), 10);
+    document.getElementById("pAmount").textContent = yen(amount) + "-";
+    document.getElementById("pTaxNote").textContent = "(税込)";
+
+    var bd = document.getElementById("pBreakdown");
+    bd.innerHTML = "";
+    var addLine = function(label, val){
+      var d = document.createElement("div");
+      var s1 = document.createElement("span"); s1.textContent = label;
+      var s2 = document.createElement("span"); s2.textContent = val;
+      d.appendChild(s1); d.appendChild(s2);
+      bd.appendChild(d);
+    };
+    if(rate > 0 && amount > 0){
+      var base = Math.round(amount * 100 / (100 + rate));
+      var tax = amount - base;
+      addLine("税抜金額", yen(base));
+      addLine("消費税(" + rate + "%" + (rate === 8 ? "・軽減税率" : "") + ")", yen(tax));
+      bd.style.display = "";
+    }else{
+      bd.style.display = "none";
+    }
+
+    /* 但し書き */
+    var tadashi = g("tadashi").trim();
+    document.getElementById("pTadashi").textContent =
+      "但し " + (tadashi || "お品代として");
+
+    /* 収入印紙欄:現金5万円以上で自動オン(手動操作後は自動判定しない) */
+    var inshiBox = document.getElementById("inshiOn");
+    if(!inshiTouched){
+      inshiBox.checked = (g("payMethod") === "cash" && amount >= 50000);
+    }
+    document.getElementById("pInshi").classList.toggle("hidden", !inshiBox.checked);
+
+    /* 発行者 */
+    document.getElementById("pFromName").textContent = g("fromName");
+    document.getElementById("pFromDetail").textContent = g("fromDetail");
+    var reg = g("regNo").trim();
+    document.getElementById("pRegNo").textContent =
+      reg ? "登録番号:" + reg : "";
+
+    /* 朱印 */
+    var hanko = document.getElementById("pHanko");
+    var stampOn = document.getElementById("stampOn").checked;
+    var sei = (g("fromName").trim().split(/[\s ]+/)[0] || "").slice(0, 3);
+    if(stampOn && sei){
+      hanko.classList.remove("hidden");
+      hanko.textContent = sei;
+    }else{
+      hanko.classList.add("hidden");
+    }
+  }
+
+  /* ---- イベント ---- */
+  document.querySelectorAll("[data-bind]").forEach(function(el){
+    el.addEventListener("input", render);
+    el.addEventListener("change", render);
+  });
+  document.getElementById("stampOn").addEventListener("change", render);
+  document.getElementById("inshiOn").addEventListener("change", function(){
+    inshiTouched = true;
+    render();
+  });
+  document.getElementById("btnPrint").addEventListener("click", function(){
+    window.print();
+  });
+
+  /* ---- サンプル ---- */
+  document.getElementById("btnSample").addEventListener("click", function(){
+    var today = new Date();
+    var iso = function(d){
+      return d.getFullYear() + "-" +
+        String(d.getMonth()+1).padStart(2,"0") + "-" +
+        String(d.getDate()).padStart(2,"0");
+    };
+    document.getElementById("docNo").value = "RCP-" + today.getFullYear() + "-001";
+    document.getElementById("docDate").value = iso(today);
+    document.getElementById("toName").value = "株式会社サンプル商事";
+    document.getElementById("amount").value = 187000;
+    document.getElementById("taxRate").value = "10";
+    document.getElementById("tadashi").value = "Webサイト制作費として";
+    document.getElementById("payMethod").value = "bank";
+    document.getElementById("fromName").value = "山田 太郎";
+    document.getElementById("fromDetail").value = "〒550-0002 大阪市西区江戸堀2-2-2\nTEL: 090-0000-0000\nyamada@example.com";
+    document.getElementById("regNo").value = "T1234567890123";
+    inshiTouched = false;
+    render();
+  });
+
+  /* ---- 初期化 ---- */
+  var t = new Date();
+  document.getElementById("docDate").value =
+    t.getFullYear() + "-" + String(t.getMonth()+1).padStart(2,"0") + "-" + String(t.getDate()).padStart(2,"0");
+  render();
+})();
+</script>
+</body>
+</html>
