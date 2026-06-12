@@ -31,7 +31,7 @@
 
 - 🌺 [ツバキ見積書](https://taku0826.github.io/tsubaki-estimate/) — 見積書・納品書ジェネレーター(ワンクリック切替)
 - 🌸 [スミレ請求書](https://taku0826.github.io/sumire-invoice/) — インボイス制度対応の請求書ジェネレーター
-- 🌸 [ナデシコ源泉徴収計算機](https://taku0826.github.io/nadeshiko-tax/) — 報酬⇄手取りの源泉徴収計算
+- 🌸 [ナデシコ源泉徴収計算機](https://taku0826.github.io/nadeshiko-tax/) — 報酬税額・手取りの計算、逆算も
 
 「見積 → 納品 → 請求 → 領収」の流れを、すべて無料・登録不要でカバーできます。
 
