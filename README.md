@@ -33,6 +33,7 @@
 - 🌸 [キキョウ発注書](https://taku0826.github.io/kikyo-order/) — 外注・仕入れ用の発注書ジェネレーター
 - 🌸 [スミレ請求書](https://taku0826.github.io/sumire-invoice/) — インボイス制度対応の請求書ジェネレーター
 - 🌸 [ナデシコ源泉徴収計算機](https://taku0826.github.io/nadeshiko-tax/) — 報酬税額・手取りの計算、逆算も
+- 🌸 [コスモス経費メモ帳](https://taku0826.github.io/kosmos-keihi/) — 経費を記録・カテゴリ別集計、CSV書き出しも
 
 「見積 → 納品 → 請求 → 領収」の流れを、すべて無料・登録不要でカバーできます。
 
